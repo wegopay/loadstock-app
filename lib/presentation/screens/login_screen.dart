@@ -18,31 +18,32 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isPasswordStep = false;
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _isDarkMode = false;
   
   late AnimationController _fadeController;
   late AnimationController _slideController;
-  late AnimationController _backgroundController;
+  late AnimationController _floatingController;
   
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  late Animation<double> _backgroundAnimation;
+  late Animation<double> _floatingAnimation;
 
   @override
   void initState() {
     super.initState();
     
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
-    _backgroundController = AnimationController(
-      duration: const Duration(seconds: 20),
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _floatingController = AnimationController(
+      duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat(reverse: true);
 
@@ -51,14 +52,14 @@ class _LoginScreenState extends State<LoginScreen>
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
+      begin: const Offset(0, 0.2),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
     );
 
-    _backgroundAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _backgroundController, curve: Curves.easeInOut),
+    _floatingAnimation = Tween<double>(begin: -10, end: 10).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
     );
 
     _fadeController.forward();
@@ -71,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen>
     _passwordController.dispose();
     _fadeController.dispose();
     _slideController.dispose();
-    _backgroundController.dispose();
+    _floatingController.dispose();
     super.dispose();
   }
 
@@ -133,54 +134,63 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  Color get _backgroundColor => _isDarkMode ? const Color(0xFF0F172A) : Colors.white;
+  Color get _textColor => _isDarkMode ? Colors.white : const Color(0xFF1F2937);
+  Color get _subtitleColor => _isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF6B7280);
+  Color get _inputFillColor => _isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB);
+  Color get _borderColor => _isDarkMode ? const Color(0xFF334155) : const Color(0xFFE5E7EB);
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isSmallScreen = size.width < 600;
-    
     return Scaffold(
+      backgroundColor: _backgroundColor,
       body: Stack(
         children: [
-          // Background animado
+          // Background com efeitos visuais
           _buildAnimatedBackground(),
           
           // Conteúdo principal
           SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isSmallScreen ? 24 : 48,
-                  vertical: 24,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: isSmallScreen ? double.infinity : 500,
+            child: Column(
+              children: [
+                // Header com logo e toggle dark mode
+                _buildHeader(),
+                
+                // Formulário centralizado
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 450),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildWelcomeText(),
+                            const SizedBox(height: 40),
+                            _buildForm(),
+                            const SizedBox(height: 24),
+                            _buildActionButton(),
+                            if (_isPasswordStep) ...[
+                              const SizedBox(height: 16),
+                              _buildBackButton(),
+                              const SizedBox(height: 16),
+                              _buildForgotPassword(),
+                            ],
+                            if (!_isPasswordStep) ...[
+                              const SizedBox(height: 32),
+                              _buildDivider(),
+                              const SizedBox(height: 24),
+                              _buildFooter(),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildHeader(),
-                      SizedBox(height: size.height * 0.06),
-                      _buildForm(),
-                      const SizedBox(height: 24),
-                      _buildActionButton(),
-                      if (_isPasswordStep) ...[
-                        const SizedBox(height: 16),
-                        _buildBackButton(),
-                        const SizedBox(height: 24),
-                        _buildForgotPassword(),
-                      ],
-                      if (!_isPasswordStep) ...[
-                        const SizedBox(height: 32),
-                        _buildDivider(),
-                        const SizedBox(height: 32),
-                        _buildFooter(),
-                      ],
-                    ],
-                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -190,31 +200,31 @@ class _LoginScreenState extends State<LoginScreen>
 
   Widget _buildAnimatedBackground() {
     return AnimatedBuilder(
-      animation: _backgroundAnimation,
+      animation: _floatingAnimation,
       builder: (context, child) {
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                EnvConfig.primaryColor.withValues(alpha: 0.1),
-                EnvConfig.secondaryColor.withValues(alpha: 0.05),
-                Colors.white,
-                EnvConfig.accentColor.withValues(alpha: 0.05),
-              ],
-              stops: [
-                0.0,
-                0.3 + (_backgroundAnimation.value * 0.2),
-                0.7 + (_backgroundAnimation.value * 0.1),
-                1.0,
-              ],
+              colors: _isDarkMode
+                  ? [
+                      const Color(0xFF0F172A),
+                      const Color(0xFF1E293B),
+                      const Color(0xFF0F172A),
+                    ]
+                  : [
+                      Colors.white,
+                      EnvConfig.primaryColor.withValues(alpha: 0.03),
+                      Colors.white,
+                    ],
             ),
           ),
           child: CustomPaint(
-            painter: BackgroundPatternPainter(
-              animation: _backgroundAnimation.value,
-              color: EnvConfig.primaryColor.withValues(alpha: 0.03),
+            painter: FloatingShapesPainter(
+              animation: _floatingAnimation.value,
+              isDarkMode: _isDarkMode,
+              primaryColor: EnvConfig.primaryColor,
             ),
             size: Size.infinite,
           ),
@@ -224,76 +234,105 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildHeader() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: Column(
-          children: [
-            // Logo com efeito glassmorphism
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    EnvConfig.primaryColor,
-                    EnvConfig.secondaryColor,
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: EnvConfig.primaryColor.withValues(alpha: 0.4),
-                    blurRadius: 30,
-                    offset: const Offset(0, 15),
-                  ),
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          // Logo pequena ao lado do nome
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  EnvConfig.primaryColor,
+                  EnvConfig.secondaryColor,
                 ],
               ),
-              child: Center(
-                child: Text(
-                  EnvConfig.logoIcon,
-                  style: GoogleFonts.inter(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1,
-                  ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: EnvConfig.primaryColor.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                EnvConfig.logoIcon,
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  height: 1,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            Text(
-              EnvConfig.appName,
-              style: GoogleFonts.inter(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
-                letterSpacing: -1,
-              ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            EnvConfig.appName,
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: _textColor,
+              letterSpacing: -0.5,
             ),
-            const SizedBox(height: 8),
-            Text(
-              EnvConfig.appSubtitle,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: const Color(0xFF6B7280),
-                fontWeight: FontWeight.w500,
-              ),
+          ),
+          const Spacer(),
+          // Toggle Dark Mode
+          Container(
+            decoration: BoxDecoration(
+              color: _inputFillColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _borderColor),
             ),
-            const SizedBox(height: 32),
-            Text(
-              _isPasswordStep ? 'Bem-vindo de volta!' : 'Faça login para continuar',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF374151),
+            child: IconButton(
+              icon: Icon(
+                _isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                color: _isDarkMode ? Colors.amber : EnvConfig.primaryColor,
               ),
+              onPressed: () {
+                setState(() => _isDarkMode = !_isDarkMode);
+              },
+              tooltip: _isDarkMode ? 'Modo Claro' : 'Modo Escuro',
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeText() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _isPasswordStep ? 'Bem-vindo de volta!' : 'Entrar na sua conta',
+            style: GoogleFonts.inter(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: _textColor,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _isPasswordStep
+                ? 'Digite sua senha para continuar'
+                : 'Digite suas credenciais para acessar',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: _subtitleColor,
+              height: 1.5,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -325,13 +364,15 @@ class _LoginScreenState extends State<LoginScreen>
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: _isDarkMode
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 15,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: TextFormField(
         controller: _emailController,
@@ -340,70 +381,60 @@ class _LoginScreenState extends State<LoginScreen>
         style: GoogleFonts.inter(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: const Color(0xFF1F2937),
+          color: _textColor,
         ),
         decoration: InputDecoration(
           labelText: 'Usuário ou E-mail',
           labelStyle: GoogleFonts.inter(
-            color: const Color(0xFF6B7280),
+            color: _subtitleColor,
             fontWeight: FontWeight.w500,
           ),
           hintText: 'Digite seu usuário ou e-mail',
           hintStyle: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: _subtitleColor.withValues(alpha: 0.6),
             fontSize: 15,
           ),
           prefixIcon: Container(
             margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: EnvConfig.primaryColor.withValues(alpha: 0.1),
+              gradient: LinearGradient(
+                colors: [
+                  EnvConfig.primaryColor.withValues(alpha: 0.15),
+                  EnvConfig.secondaryColor.withValues(alpha: 0.1),
+                ],
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               Icons.person_outline_rounded,
               color: EnvConfig.primaryColor,
-              size: 24,
+              size: 22,
             ),
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: _inputFillColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: const Color(0xFFE5E7EB),
-              width: 1.5,
-            ),
+            borderSide: BorderSide(color: _borderColor, width: 1.5),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EnvConfig.primaryColor,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: EnvConfig.primaryColor, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EnvConfig.errorColor,
-              width: 1.5,
-            ),
+            borderSide: BorderSide(color: EnvConfig.errorColor, width: 1.5),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EnvConfig.errorColor,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: EnvConfig.errorColor, width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 20,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -425,10 +456,15 @@ class _LoginScreenState extends State<LoginScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            EnvConfig.primaryColor.withValues(alpha: 0.08),
-            EnvConfig.secondaryColor.withValues(alpha: 0.05),
-          ],
+          colors: _isDarkMode
+              ? [
+                  EnvConfig.primaryColor.withValues(alpha: 0.15),
+                  EnvConfig.secondaryColor.withValues(alpha: 0.1),
+                ]
+              : [
+                  EnvConfig.primaryColor.withValues(alpha: 0.08),
+                  EnvConfig.secondaryColor.withValues(alpha: 0.05),
+                ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -439,8 +475,8 @@ class _LoginScreenState extends State<LoginScreen>
       child: Row(
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -450,7 +486,7 @@ class _LoginScreenState extends State<LoginScreen>
                   EnvConfig.secondaryColor,
                 ],
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
                   color: EnvConfig.primaryColor.withValues(alpha: 0.3),
@@ -462,7 +498,7 @@ class _LoginScreenState extends State<LoginScreen>
             child: const Icon(
               Icons.person_rounded,
               color: Colors.white,
-              size: 26,
+              size: 28,
             ),
           ),
           const SizedBox(width: 16),
@@ -474,7 +510,7 @@ class _LoginScreenState extends State<LoginScreen>
                   'Entrando como',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: const Color(0xFF6B7280),
+                    color: _subtitleColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -484,7 +520,7 @@ class _LoginScreenState extends State<LoginScreen>
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1F2937),
+                    color: _textColor,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -500,13 +536,15 @@ class _LoginScreenState extends State<LoginScreen>
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: _isDarkMode
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 15,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: TextFormField(
         controller: _passwordController,
@@ -515,31 +553,36 @@ class _LoginScreenState extends State<LoginScreen>
         style: GoogleFonts.inter(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: const Color(0xFF1F2937),
+          color: _textColor,
         ),
         onFieldSubmitted: (_) => _handleLogin(),
         decoration: InputDecoration(
           labelText: 'Senha',
           labelStyle: GoogleFonts.inter(
-            color: const Color(0xFF6B7280),
+            color: _subtitleColor,
             fontWeight: FontWeight.w500,
           ),
           hintText: 'Digite sua senha',
           hintStyle: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: _subtitleColor.withValues(alpha: 0.6),
             fontSize: 15,
           ),
           prefixIcon: Container(
             margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: EnvConfig.primaryColor.withValues(alpha: 0.1),
+              gradient: LinearGradient(
+                colors: [
+                  EnvConfig.primaryColor.withValues(alpha: 0.15),
+                  EnvConfig.secondaryColor.withValues(alpha: 0.1),
+                ],
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               Icons.lock_outline_rounded,
               color: EnvConfig.primaryColor,
-              size: 24,
+              size: 22,
             ),
           ),
           suffixIcon: IconButton(
@@ -547,50 +590,35 @@ class _LoginScreenState extends State<LoginScreen>
               _obscurePassword
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
-              color: const Color(0xFF6B7280),
+              color: _subtitleColor,
             ),
             onPressed: () {
               setState(() => _obscurePassword = !_obscurePassword);
             },
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: _inputFillColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: const Color(0xFFE5E7EB),
-              width: 1.5,
-            ),
+            borderSide: BorderSide(color: _borderColor, width: 1.5),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EnvConfig.primaryColor,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: EnvConfig.primaryColor, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EnvConfig.errorColor,
-              width: 1.5,
-            ),
+            borderSide: BorderSide(color: EnvConfig.errorColor, width: 1.5),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EnvConfig.errorColor,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: EnvConfig.errorColor, width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 20,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -609,7 +637,7 @@ class _LoginScreenState extends State<LoginScreen>
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
-        height: 60,
+        height: 58,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
@@ -624,7 +652,7 @@ class _LoginScreenState extends State<LoginScreen>
             BoxShadow(
               color: EnvConfig.primaryColor.withValues(alpha: 0.4),
               blurRadius: 20,
-              offset: const Offset(0, 10),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -654,19 +682,19 @@ class _LoginScreenState extends State<LoginScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      _isPasswordStep ? 'Entrar' : 'Avançar',
+                      _isPasswordStep ? 'Entrar' : 'Continuar',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Icon(
                       _isPasswordStep
                           ? Icons.login_rounded
                           : Icons.arrow_forward_rounded,
-                      size: 22,
+                      size: 20,
                     ),
                   ],
                 ),
@@ -678,17 +706,17 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildBackButton() {
     return TextButton.icon(
       onPressed: _handleBack,
-      icon: const Icon(Icons.arrow_back_rounded, size: 20),
+      icon: Icon(Icons.arrow_back_rounded, size: 20, color: _subtitleColor),
       label: Text(
         'Voltar',
         style: GoogleFonts.inter(
           fontSize: 15,
           fontWeight: FontWeight.w600,
+          color: _subtitleColor,
         ),
       ),
       style: TextButton.styleFrom(
-        foregroundColor: const Color(0xFF6B7280),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14),
       ),
     );
   }
@@ -727,15 +755,8 @@ class _LoginScreenState extends State<LoginScreen>
       children: [
         Expanded(
           child: Container(
-            height: 1.5,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  const Color(0xFFE5E7EB),
-                ],
-              ),
-            ),
+            height: 1,
+            color: _borderColor,
           ),
         ),
         Padding(
@@ -744,22 +765,15 @@ class _LoginScreenState extends State<LoginScreen>
             'ou',
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: const Color(0xFF9CA3AF),
+              color: _subtitleColor,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
         Expanded(
           child: Container(
-            height: 1.5,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFE5E7EB),
-                  Colors.transparent,
-                ],
-              ),
-            ),
+            height: 1,
+            color: _borderColor,
           ),
         ),
       ],
@@ -776,7 +790,7 @@ class _LoginScreenState extends State<LoginScreen>
             'Não tem uma conta? ',
             style: GoogleFonts.inter(
               fontSize: 15,
-              color: const Color(0xFF6B7280),
+              color: _subtitleColor,
             ),
           ),
           TextButton(
@@ -795,7 +809,7 @@ class _LoginScreenState extends State<LoginScreen>
               );
             },
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -814,40 +828,91 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// Custom painter para padrão de fundo
-class BackgroundPatternPainter extends CustomPainter {
+// Custom painter para formas flutuantes no fundo
+class FloatingShapesPainter extends CustomPainter {
   final double animation;
-  final Color color;
+  final bool isDarkMode;
+  final Color primaryColor;
 
-  BackgroundPatternPainter({
+  FloatingShapesPainter({
     required this.animation,
-    required this.color,
+    required this.isDarkMode,
+    required this.primaryColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
+      ..style = PaintingStyle.fill
+      ..color = isDarkMode
+          ? primaryColor.withValues(alpha: 0.05)
+          : primaryColor.withValues(alpha: 0.03);
 
-    // Desenhar círculos decorativos
+    // Círculos flutuantes
     final circles = [
-      {'x': 0.1, 'y': 0.2, 'r': 100.0},
-      {'x': 0.9, 'y': 0.3, 'r': 150.0},
-      {'x': 0.2, 'y': 0.8, 'r': 120.0},
-      {'x': 0.8, 'y': 0.7, 'r': 80.0},
+      {'x': 0.15, 'y': 0.2, 'r': 120.0},
+      {'x': 0.85, 'y': 0.15, 'r': 100.0},
+      {'x': 0.1, 'y': 0.7, 'r': 90.0},
+      {'x': 0.9, 'y': 0.8, 'r': 110.0},
+      {'x': 0.5, 'y': 0.5, 'r': 80.0},
     ];
 
     for (var circle in circles) {
       final x = size.width * (circle['x'] as double);
-      final y = size.height * (circle['y'] as double) + (animation * 50);
+      final y = size.height * (circle['y'] as double) + animation;
       final r = circle['r'] as double;
-      canvas.drawCircle(Offset(x, y), r, paint);
+      
+      // Círculo com blur
+      canvas.drawCircle(
+        Offset(x, y),
+        r,
+        paint..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40),
+      );
     }
+
+    // Linhas decorativas
+    final linePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..color = isDarkMode
+          ? primaryColor.withValues(alpha: 0.08)
+          : primaryColor.withValues(alpha: 0.05);
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.3 + animation);
+    path.quadraticBezierTo(
+      size.width * 0.25,
+      size.height * 0.25 + animation,
+      size.width * 0.5,
+      size.height * 0.3 + animation,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.75,
+      size.height * 0.35 + animation,
+      size.width,
+      size.height * 0.3 + animation,
+    );
+    canvas.drawPath(path, linePaint);
+
+    final path2 = Path();
+    path2.moveTo(0, size.height * 0.7 - animation);
+    path2.quadraticBezierTo(
+      size.width * 0.25,
+      size.height * 0.65 - animation,
+      size.width * 0.5,
+      size.height * 0.7 - animation,
+    );
+    path2.quadraticBezierTo(
+      size.width * 0.75,
+      size.height * 0.75 - animation,
+      size.width,
+      size.height * 0.7 - animation,
+    );
+    canvas.drawPath(path2, linePaint);
   }
 
   @override
-  bool shouldRepaint(BackgroundPatternPainter oldDelegate) {
-    return animation != oldDelegate.animation;
+  bool shouldRepaint(FloatingShapesPainter oldDelegate) {
+    return animation != oldDelegate.animation || isDarkMode != oldDelegate.isDarkMode;
   }
 }
