@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loadstock/presentation/screens/login_screen.dart';
 import 'dart:math' as math;
 
 class SplashScreen extends StatefulWidget {
@@ -47,6 +48,23 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
     _controller.repeat();
+    
+    // Navegar para a tela de login após 3 segundos
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const LoginScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
+        );
+      }
+    });
   }
 
   @override
