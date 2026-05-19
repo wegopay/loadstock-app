@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loadstock/core/config/env_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _isDarkMode = false;
+  bool _rememberUser = false;
   
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -64,6 +66,9 @@ class _LoginScreenState extends State<LoginScreen>
 
     _fadeController.forward();
     _slideController.forward();
+    
+    // Carregar usuário salvo
+    _loadSavedUser();
   }
 
   @override
@@ -85,8 +90,53 @@ class _LoginScreenState extends State<LoginScreen>
     return username.length >= 3;
   }
 
+  // Carregar usuário salvo
+  Future<void> _loadSavedUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedUser = prefs.getString('saved_user');
+      final rememberUser = prefs.getBool('remember_user') ?? false;
+      
+      if (savedUser != null && rememberUser) {
+        setState(() {
+          _emailController.text = savedUser;
+          _rememberUser = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Erro ao carregar usuário salvo: $e');
+    }
+  }
+
+  // Salvar usuário
+  Future<void> _saveUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberUser) {
+        await prefs.setString('saved_user', _emailController.text);
+        await prefs.setBool('remember_user', true);
+      } else {
+        await prefs.remove('saved_user');
+        await prefs.setBool('remember_user', false);
+      }
+    } catch (e) {
+      debugPrint('Erro ao salvar usuário: $e');
+    }
+  }
+
+  // Alternar "Lembrar usuário"
+  void _toggleRememberUser(bool? value) {
+    setState(() {
+      _rememberUser = value ?? false;
+    });
+    _saveUser();
+  }
+
   void _handleNext() {
     if (_formKey.currentState!.validate()) {
+      // Salvar usuário se a opção estiver marcada
+      _saveUser();
+      
       setState(() => _isPasswordStep = true);
       _fadeController.reset();
       _slideController.reset();
@@ -347,7 +397,11 @@ class _LoginScreenState extends State<LoginScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!_isPasswordStep) _buildEmailField(),
+              if (!_isPasswordStep) ...[
+                _buildEmailField(),
+                const SizedBox(height: 12),
+                _buildRememberUserCheckbox(),
+              ],
               if (_isPasswordStep) ...[
                 _buildUserDisplay(),
                 const SizedBox(height: 20),
@@ -446,6 +500,39 @@ class _LoginScreenState extends State<LoginScreen>
           return null;
         },
       ),
+    );
+  }
+
+  Widget _buildRememberUserCheckbox() {
+    return Row(
+      children: [
+        SizedBox(
+          height: 24,
+          width: 24,
+          child: Checkbox(
+            value: _rememberUser,
+            onChanged: _toggleRememberUser,
+            activeColor: EnvConfig.primaryColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _toggleRememberUser(!_rememberUser),
+            child: Text(
+              'Lembrar meu usuário',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: _subtitleColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
