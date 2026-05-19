@@ -90,54 +90,85 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Logo animado
+                          _buildAnimatedLogo(),
+                          const SizedBox(height: 40),
+                          // Nome do app
+                          Text(
+                            EnvConfig.appName,
+                            style: GoogleFonts.inter(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Subtítulo
+                          Text(
+                            EnvConfig.appSubtitle,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 60),
+                          // Loading indicator
+                          SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Rodapé com créditos
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo animado
-                    _buildAnimatedLogo(),
-                    const SizedBox(height: 40),
-                    // Nome do app
                     Text(
-                      EnvConfig.appName,
+                      'Desenvolvido por Adimael S.',
                       style: GoogleFonts.inter(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Subtítulo
-                    Text(
-                      EnvConfig.appSubtitle,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 60),
-                    // Loading indicator
-                    SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withValues(alpha: 0.8),
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'com apoio do projeto vupi.us api',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),

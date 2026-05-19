@@ -240,6 +240,32 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                 ),
+                
+                // Rodapé com créditos
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Desenvolvido por Adimael S.',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: _subtitleColor.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'com apoio do projeto vupi.us api',
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          color: _subtitleColor.withValues(alpha: 0.6),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
