@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loadstock/core/config/env_config.dart';
 
 class AppTheme {
-  // Colors
-  static const Color primaryColor = Color(0xFF2563EB);
-  static const Color secondaryColor = Color(0xFF3B82F6);
-  static const Color accentColor = Color(0xFF10B981);
-  static const Color errorColor = Color(0xFFEF4444);
-  static const Color warningColor = Color(0xFFF59E0B);
-  static const Color successColor = Color(0xFF10B981);
+  // Colors (usando EnvConfig)
+  static Color get primaryColor => EnvConfig.primaryColor;
+  static Color get secondaryColor => EnvConfig.secondaryColor;
+  static Color get accentColor => EnvConfig.accentColor;
+  static Color get errorColor => EnvConfig.errorColor;
+  static Color get warningColor => EnvConfig.warningColor;
+  static Color get successColor => EnvConfig.successColor;
   
   static const Color backgroundColor = Color(0xFFF9FAFB);
   static const Color surfaceColor = Color(0xFFFFFFFF);
@@ -78,11 +79,11 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: primaryColor, width: 2),
+        borderSide: BorderSide(color: primaryColor, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: errorColor),
+        borderSide: BorderSide(color: errorColor),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),

@@ -1,16 +1,22 @@
+import 'package:loadstock/core/config/env_config.dart';
+
 class AppConstants {
-  // App Info
-  static const String appName = 'LoadStock';
-  static const String appVersion = '1.0.0';
+  // App Info (usando EnvConfig)
+  static String get appName => EnvConfig.appName;
+  static String get appSubtitle => EnvConfig.appSubtitle;
+  static String get appVersion => EnvConfig.appVersion;
   
-  // API Configuration
-  static const String apiBaseUrl = 'http://localhost:8000/api';
-  static const Duration apiTimeout = Duration(seconds: 30);
+  // API Configuration (usando EnvConfig)
+  static String get apiBaseUrl => EnvConfig.apiBaseUrl;
+  static Duration get apiTimeout => Duration(milliseconds: EnvConfig.apiTimeout);
   
-  // Storage Keys
-  static const String tokenKey = 'auth_token';
-  static const String userKey = 'user_data';
-  static const String themeKey = 'theme_mode';
+  // Storage Keys (usando EnvConfig)
+  static String get tokenKey => EnvConfig.authTokenKey;
+  static String get userKey => EnvConfig.authUserKey;
+  static String get refreshTokenKey => EnvConfig.authRefreshTokenKey;
+  static String get themeKey => EnvConfig.themeKey;
+  static String get languageKey => EnvConfig.languageKey;
+  static String get firstRunKey => EnvConfig.firstRunKey;
   
   // Routes
   static const String splashRoute = '/';

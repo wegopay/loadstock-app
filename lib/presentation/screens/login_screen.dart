@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loadstock/core/config/env_config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -166,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           child: Center(
             child: Text(
-              'S',
+              EnvConfig.logoIcon,
               style: GoogleFonts.inter(
                 fontSize: 40,
                 fontWeight: FontWeight.bold,
@@ -177,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          'LoadStock',
+          EnvConfig.appName,
           style: GoogleFonts.inter(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -186,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 4),
         Text(
-          'Sistema PDV Moderno',
+          EnvConfig.appSubtitle,
           style: GoogleFonts.inter(
             fontSize: 14,
             color: const Color(0xFF6B7280),

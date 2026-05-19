@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:loadstock/core/config/env_config.dart';
 import 'package:loadstock/presentation/screens/splash_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Carregar variáveis de ambiente
+  await dotenv.load(fileName: ".env");
+  
+  // Imprimir configurações em modo debug
+  EnvConfig.printConfig();
+  
   runApp(const LoadStockApp());
 }
 
@@ -12,7 +22,7 @@ class LoadStockApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'LoadStock',
+      title: EnvConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

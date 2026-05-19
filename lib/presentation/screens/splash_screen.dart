@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loadstock/core/config/env_config.dart';
 import 'package:loadstock/presentation/screens/login_screen.dart';
 import 'dart:math' as math;
 
@@ -102,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 40),
                     // Nome do app
                     Text(
-                      'LoadStock',
+                      EnvConfig.appName,
                       style: GoogleFonts.inter(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
@@ -113,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 12),
                     // Subtítulo
                     Text(
-                      'Sistema PDV Moderno',
+                      EnvConfig.appSubtitle,
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -177,7 +178,7 @@ class _SplashScreenState extends State<SplashScreen>
           ),
           // Letra S
           Text(
-            'S',
+            EnvConfig.logoIcon,
             style: GoogleFonts.inter(
               fontSize: 72,
               fontWeight: FontWeight.bold,
