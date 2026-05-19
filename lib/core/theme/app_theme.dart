@@ -29,7 +29,6 @@ class AppTheme {
       secondary: secondaryColor,
       error: errorColor,
       surface: surfaceColor,
-      background: backgroundColor,
     ),
     textTheme: GoogleFonts.interTextTheme().apply(
       bodyColor: textPrimaryColor,
@@ -46,7 +45,7 @@ class AppTheme {
         color: textPrimaryColor,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
